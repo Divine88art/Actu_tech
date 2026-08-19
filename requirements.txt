@@ -3,3 +3,4 @@ feedparser
 Flask
 google-genai
 requests
+gunicorn
