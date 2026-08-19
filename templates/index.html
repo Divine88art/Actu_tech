@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actu Tech - Générateur de Contenu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        h1 { color: #38bdf8; text-align: center; }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background-color: #1e293b;
+            color: white;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background-color: #0369a1; }
+        .card {
+            background-color: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+        .card img {
+            width: 100%;
+            max-height: 350px;
+            object-fit: cover;
+        }
+        .card-content { padding: 24px; }
+        .card-title { font-size: 20px; color: #f1f5f9; margin-top: 0; }
+        .post-ia-box {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            white-space: pre-line;
+            border-left: 4px solid #38bdf8;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 Actu Tech Auto</h1>
+    <p style="text-align: center; color: #94a3b8;">Colle le lien d'un article tech pour générer ta publication Facebook</p>
+
+    <form method="POST" class="search-box" id="analysis-form">
+        <input type="text" name="url" placeholder="https://..." value="{{ url }}" required>
+        <button type="submit" id="analyze-button">Analyser ⚡</button>
+    </form>
+    <p id="loading-message" hidden style="text-align: center; color: #94a3b8;">Analyse en cours, cela peut prendre quelques secondes...</p>
+
+    {% if resultat %}
+        {% if resultat.erreur %}
+            <p style="color: #ef4444; text-align: center;">{{ resultat.erreur }}</p>
+        {% else %}
+            <div class="card">
+                {% if resultat.image %}
+                    <img src="{{ resultat.image }}" alt="Image de l'article">
+                {% endif %}
+                <div class="card-content">
+                    <h2 class="card-title">📌 {{ resultat.titre }}</h2>
+
+                    {% if post_ia %}
+			<div class="post-ia-box">
+			    <div style="display: flex; justify-content: space-between; align-items: center;">
+			        <strong style="color: #38bdf8;">🤖 Post rédigé pour Facebook :</strong>
+			        <!-- Bouton Copier -->
+			        <button type="button" onclick="copierPost()" id="btn-copy" style="background: #38bdf8; color: #0f172a; padding: 6px 12px; font-size: 13px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold;">
+			            📋 Copier le texte
+			        </button>
+			    </div>
+    
+    <!-- Contenu du post avec ID -->
+    <div id="post-text" style="margin-top: 15px; line-height: 1.6;">
+        {{ post_ia | safe }}
+    </div>
+</div>
+                    {% else %}
+                        <p><strong>📝 Résumé :</strong> {{ resultat.resume }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+<!-- Section Tendances Tech -->
+<div style="margin-top: 30px; background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155;">
+    <h2 style="color: #38bdf8; font-size: 18px; margin-top: 0;">🔥 Actualités Tendance du Moment</h2>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+        {% for item in tendances %}
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px; border-radius: 8px;">
+                <div>
+                    <span style="font-size: 11px; background: #0284c7; padding: 2px 6px; border-radius: 4px; color: white;">{{ item.source }}</span>
+                    <p style="margin: 5px 0 0 0; font-weight: 500; font-size: 14px;">{{ item.titre }}</p>
+                </div>
+                <form method="POST" style="margin: 0;">
+                    <input type="hidden" name="url" value="{{ item.lien }}">
+                    <button type="submit" style="padding: 6px 12px; font-size: 12px;">Générer ⚡</button>
+                </form>
+            </div>
+        {% endfor %}
+        {% if not tendances %}
+            <p style="margin: 0; color: #94a3b8;">Les tendances seront chargées lors de la prochaine visite.</p>
+        {% endif %}
+    </div>
+</div>
+<script>
+document.getElementById("analysis-form").addEventListener("submit", function () {
+    const button = document.getElementById("analyze-button");
+    button.disabled = true;
+    button.innerText = "Analyse...";
+    document.getElementById("loading-message").hidden = false;
+});
+
+function copierPost() {
+    // Récupération du texte
+    const textePost = document.getElementById("post-text").innerText;
+    
+    // Copie dans le presse-papier
+    navigator.clipboard.writeText(textePost).then(() => {
+        const btn = document.getElementById("btn-copy");
+        btn.innerText = "✅ Copié !";
+        btn.style.background = "#22c55e"; // Vert
+        btn.style.color = "#ffffff";
+
+        // Remet le bouton d'origine après 2 secondes
+        setTimeout(() => {
+            btn.innerText = "📋 Copier le texte";
+            btn.style.background = "#38bdf8";
+            btn.style.color = "#0f172a";
+        }, 2000);
+    }).catch(err => {
+        alert("Erreur lors de la copie : " + err);
+    });
+}
+</script>
+
+</body>
+</html>
